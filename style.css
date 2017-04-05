@@ -1,0 +1,72 @@
+body {
+    font-family: helvetica, arial, freesans, clean, sans-serif;
+    font-size: 18px;
+    color: #222;
+    background-color: lightgrey;
+}
+.lfbtable {
+    display: flex;
+    flex-direction: row;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-around;
+    background-color: dimgray;
+}
+
+.row {
+    display: flex;
+    flex-direction: row;
+}
+
+.cell {
+    max-width: 24.9%;
+    max-height: 24.9%;
+    width: auto;
+    height: auto;
+    background-position: center center;
+    background-repeat: no-repeat;
+    background-size: cover;
+    overflow: hidden;
+}
+
+.cell > p {
+    margin-bottom: 0;
+}
+
+img {
+    max-width: 100%;
+}
+
+.copy {
+    font-size: 1.2rem;
+}
+
+h1 {
+    font-size: 1.8rem;
+    margin-bottom: 0.63rem;
+}
+
+h2 {
+    font-size: 1.6rem;
+    margin-bottom: 0.86rem;
+}
+
+h3 {
+    font-size: 1.4rem;
+}
+
+h4 {
+    font-size: 1.2rem;
+}
+@media screen and (max-width: 990px) {
+    .cell {
+        max-width: 33.15%;
+        max-height: 33.15%;
+    }
+}
+@media screen and (max-width: 640px) {
+    .cell {
+        max-width: 49.9%;
+        max-height: 49.9%;
+    }
+}
