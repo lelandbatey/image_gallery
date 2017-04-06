@@ -3,6 +3,89 @@ import argparse
 import os.path
 import os
 
+css = '''
+body {
+    font-family: helvetica, arial, freesans, clean, sans-serif;
+    font-size: 18px;
+    color: #222;
+    background-color: lightgrey;
+}
+.lfbtable {
+    display: flex;
+    flex-direction: row;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-around;
+}
+
+.row {
+    display: flex;
+    flex-direction: row;
+}
+
+.cell {
+    max-width: 24.9%;
+    max-height: 24.9%;
+    width: auto;
+    height: auto;
+    background-position: center center;
+    background-repeat: no-repeat;
+    background-size: cover;
+    overflow: hidden;
+    transition: .2s ease opacity;
+}
+
+.cell > p {
+    margin-bottom: 0;
+}
+
+img {
+    max-width: 100%;
+    display: block;
+    padding-bottom: 2px;
+}
+
+.cell:hover {
+    opacity: 0.8;
+}
+.cell:hover:after {
+    opacity: 1;
+}
+
+.copy {
+    font-size: 1.2rem;
+}
+
+h1 {
+    font-size: 1.8rem;
+    margin-bottom: 0.63rem;
+}
+
+h2 {
+    font-size: 1.6rem;
+    margin-bottom: 0.86rem;
+}
+
+h3 {
+    font-size: 1.4rem;
+}
+
+h4 {
+    font-size: 1.2rem;
+}
+@media screen and (max-width: 990px) {
+    .cell {
+        max-width: 33.15%;
+        max-height: 33.15%;
+    }
+}
+@media screen and (max-width: 640px) {
+    .cell {
+        max-width: 49.9%;
+        max-height: 49.9%;
+    }
+}
+'''
 
 class Picture(object):
     '''Picture represents the portions of a picture we're interested in.'''
@@ -25,7 +108,7 @@ def make_thumbnail(diskpath, thumbfolder, maxsize=800):
         os.path.abspath(thumbfolder), os.path.basename(diskpath))
     args = ['convert', "'{}'".format(diskpath),
             '-resize 800x800^ -gravity Center -crop 800x800+0+0 ', '-quality',
-            '80', "'{}'".format(thumbpath)]
+            '60', "'{}'".format(thumbpath)]
     if os.path.exists(thumbpath):
         print("Thumbnail path '{}' already exists, skipping".format(thumbpath))
         return thumbpath
@@ -49,8 +132,8 @@ def group_rows(pictures):
     rv = ""
     cells = []
     for pic in pictures:
-        cell = "<div class='cell'><p>{}</p><a href='{}'><img src='{}'></a></div>".format(
-            pic.name, pic.relpath, pic.thumbpath)
+        cell = "<div class='cell'><a href='{}'><img src='{}'></a></div>".format(
+            pic.relpath, pic.thumbpath)
         cells.append(cell)
     rv = "\n".join(cells)
     return rv
@@ -86,8 +169,7 @@ def create_page(images, output_dir):
     table = table.format(rows)
 
     rv = ""
-    with open('style.css') as style:
-        rv = page.format(style.read(), "", table)
+    rv = page.format(css, "", table)
 
     with open(os.path.join(output_dir, 'index.html'), 'w+') as index:
         index.write(rv)
