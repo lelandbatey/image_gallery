@@ -87,6 +87,7 @@ h4 {
 }
 '''
 
+
 class Picture(object):
     '''Picture represents the portions of a picture we're interested in.'''
 
@@ -97,7 +98,7 @@ class Picture(object):
         self.thumbpath = thumbpath
 
 
-def make_thumbnail(diskpath, thumbfolder, maxsize=800):
+def make_thumbnail(diskpath, thumbfolder, maxsize=640):
     '''Takes the path to an image on disk and the path to the output thumbnail
     folder and creates a thumbnail image in the thumbnail directory. If the
     thumbnail directory doesn't exist, it's created.'''
@@ -106,9 +107,10 @@ def make_thumbnail(diskpath, thumbfolder, maxsize=800):
     # Use imagemagick for thumbnail creation
     thumbpath = os.path.join(
         os.path.abspath(thumbfolder), os.path.basename(diskpath))
-    args = ['convert', "'{}'".format(diskpath),
-            '-resize 800x800^ -gravity Center -crop 800x800+0+0 ', '-quality',
-            '60', "'{}'".format(thumbpath)]
+    resize_opts = '-resize {size}x{size}^ -gravity Center -crop {size}x{size}+0+0 '.format(
+        size=maxsize)
+    args = ['convert', "'{}'".format(diskpath), resize_opts, '-quality', '60',
+            "'{}'".format(thumbpath)]
     if os.path.exists(thumbpath):
         print("Thumbnail path '{}' already exists, skipping".format(thumbpath))
         return thumbpath
@@ -140,9 +142,22 @@ def group_rows(pictures):
 
 
 def create_page(images, output_dir):
+    '''Create_page accepts a list of paths to images and the location of the
+    directory to place the gallery within. Each image must have an extension of
+    one of the following:
+        .jpg
+        .jpeg
+        .png
+        .gif
+    Any file that lacks those extensions will be ignored.
+    '''
     thumbfolder = os.path.join(os.path.abspath(output_dir), "thumbnails")
     pictures = []
-    for img in images:
+
+    accepted_extensions = ['.jpg', '.jpeg', '.png', '.gif']
+    images = [img for img in images if img.endswith(
+        tuple(accepted_extensions))]
+    for idx, img in enumerate(images):
         abs_thumbpath = make_thumbnail(img, thumbfolder)
         rel_thumbpath = os.path.relpath(abs_thumbpath, output_dir)
         # relpath is the path to the full-resolution image, relative to the
@@ -151,6 +166,9 @@ def create_page(images, output_dir):
         relpath = os.path.relpath(fullres_link, output_dir)
         pic = Picture("", os.path.abspath(img), relpath, rel_thumbpath)
         pictures.append(pic)
+
+        print("{}% complete\r".format(int(100 * (idx / len(images)))), end="")
+    print()
 
     page = """<!DOCTYPE html>
 <html>
