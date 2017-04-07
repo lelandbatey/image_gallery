@@ -1,3 +1,4 @@
+#! /usr/bin/env python3
 import subprocess
 import argparse
 import os.path
@@ -129,6 +130,13 @@ def link_image(diskpath, output_dir):
     os.symlink(source, dest)
     return dest
 
+def render_markdown(md):
+    '''Calls out to pandoc to render markdown. '''
+    args = ['pandoc', '-f', 'markdown', '-t', 'html']
+    pandoc = subprocess.Popen(
+        args, stdin=subprocess.PIPE, stdout=subprocess.PIPE, universal_newlines=True)
+    output = pandoc.communicate(input=md)[0]
+    return output
 
 def group_rows(pictures):
     rv = ""
@@ -141,7 +149,7 @@ def group_rows(pictures):
     return rv
 
 
-def create_page(images, output_dir):
+def create_page(images, output_dir, copy_path):
     '''Create_page accepts a list of paths to images and the location of the
     directory to place the gallery within. Each image must have an extension of
     one of the following:
@@ -170,6 +178,14 @@ def create_page(images, output_dir):
         print("{}% complete\r".format(int(100 * (idx / len(images)))), end="")
     print()
 
+    body_md = ""
+    if copy_path and os.path.exists(copy_path):
+        with open(copy_path) as c:
+            body_md = render_markdown(c.read())
+    if copy_path and not os.path.exists(copy_path):
+        print("The provided path '{}' to a markdown file for the body text does not exist".format(copy_path))
+
+
     page = """<!DOCTYPE html>
 <html>
 <style type="text/css">
@@ -187,7 +203,7 @@ def create_page(images, output_dir):
     table = table.format(rows)
 
     rv = ""
-    rv = page.format(css, "", table)
+    rv = page.format(css, body_md, table)
 
     with open(os.path.join(output_dir, 'index.html'), 'w+') as index:
         index.write(rv)
@@ -200,10 +216,11 @@ def main():
         description='Create a web-page with nice tiled links to all the images provided.'
     )
     parser.add_argument('--destdir', type=str, default="./gallery/")
+    parser.add_argument('--bodymarkdown', type=str, help='Location of markdown file to use for the body text.')
     parser.add_argument('images', type=str, nargs='+')
     args = parser.parse_args()
 
-    _ = create_page(args.images, args.destdir)
+    _ = create_page(args.images, args.destdir, args.bodymarkdown)
 
 
 if __name__ == '__main__':
